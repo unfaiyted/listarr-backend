@@ -1,0 +1,48 @@
+basePath: /api/v1
+definitions:
+  main.User:
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for Your Application
+  title: Your API Name
+  version: "1.0"
+paths:
+  /users:
+    get:
+      description: Get all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.User'
+            type: array
+      summary: Get users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User Info
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.User'
+      summary: Create user
+      tags:
+      - users
+swagger: "2.0"
