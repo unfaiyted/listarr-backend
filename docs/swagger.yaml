@@ -1,17 +1,63 @@
 basePath: /api/v1
 definitions:
-  main.User:
+  models.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  models.User:
+    properties:
+      email:
+        example: john@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: John Doe
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        description: omitempty will exclude it from JSON responses
+        example: strongpassword123
+        format: password
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  models.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
     type: object
 host: localhost:8080
 info:
-  contact: {}
-  description: API Server for Your Application
-  title: Your API Name
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API Server for Listarr application
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Listarr API
   version: "1.0"
 paths:
   /users:
     get:
-      description: Get all users
+      consumes:
+      - application/json
+      description: Get all users in the system
       produces:
       - application/json
       responses:
@@ -19,30 +65,137 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.User'
+              $ref: '#/definitions/models.UserResponse'
             type: array
-      summary: Get users
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: List users
       tags:
       - users
     post:
       consumes:
       - application/json
-      description: Create a new user
+      description: Create a new user in the system
       parameters:
-      - description: User Info
+      - description: User data
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/main.User'
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete a user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.User'
-      summary: Create user
+            $ref: '#/definitions/models.UserResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get a user
       tags:
       - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user's information
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update a user
+      tags:
+      - users
+schemes:
+- http
 swagger: "2.0"

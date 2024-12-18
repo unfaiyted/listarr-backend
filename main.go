@@ -1,31 +1,40 @@
- // main.go
+// main.go
 package main
 
 import (
+	"fmt"
+	"listarr-backend/handlers"
+	"listarr-backend/models"
 	"log"
-  "fmt"
-  "os"
-	// "net/http"
+	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
-	"gorm.io/gorm"
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
-   ginSwagger "github.com/swaggo/gin-swagger"
-   swaggerFiles "github.com/swaggo/files"
-   _ "listarr-backend/docs"
+	_ "listarr-backend/docs"
 
-   "listarr-backend/models"
-   "listarr-backend/handlers"
-
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title           Listarr 
-// @version         1.0
-// @description     API Server for Listarr application. 
-// @host            localhost:8080
-// @BasePath        /api/v1
+//	@title			Listarr API
+//	@version		1.0
+//	@description	API Server for Listarr application
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www.swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host		localhost:8080
+// @BasePath	/api/v1
+// @schemes	http
+// @openapi	3.0.0
 func main() {
 	// Initialize DB
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
@@ -46,7 +55,7 @@ func main() {
 
 	// CORS Configuration
 	config := cors.DefaultConfig()
-  config.AllowOrigins = []string{"http://localhost:3000", "http://192.168.0.126:3000"} // Your frontend URL
+	config.AllowOrigins = []string{"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://192.168.0.126:3000"} // Your frontend URL
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Authorization", "Content-Type"}
 	r.Use(cors.New(config))
@@ -65,9 +74,9 @@ func main() {
 		}
 	}
 
-// Then in your main() function, add:
-r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Then in your main() function, add:
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-// Start server
-r.Run(":8080")
+	// Start server
+	r.Run(":8080")
 }
