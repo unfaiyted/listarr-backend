@@ -24,6 +24,108 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/config": {
+            "get": {
+                "description": "Retrieve current application configuration",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Get configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Configuration"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfigResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update application configuration settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Update configuration",
+                "parameters": [
+                    {
+                        "description": "Configuration settings",
+                        "name": "configuration",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Configuration"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Configuration"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfigResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfigResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/config/reset": {
+            "post": {
+                "description": "Reset configuration to default values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "config"
+                ],
+                "summary": "Reset configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Configuration"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ConfigResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get all users in the system",
@@ -242,6 +344,61 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ConfigResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.Configuration"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Configuration": {
+            "type": "object",
+            "required": [
+                "api_version",
+                "database_url",
+                "log_level",
+                "max_page_size",
+                "server_port"
+            ],
+            "properties": {
+                "api_version": {
+                    "type": "string",
+                    "example": "v1"
+                },
+                "database_url": {
+                    "type": "string",
+                    "example": "postgres://localhost:5432/listarr"
+                },
+                "enable_caching": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "log_level": {
+                    "type": "string",
+                    "enum": [
+                        "debug",
+                        "info",
+                        "warn",
+                        "error"
+                    ],
+                    "example": "info"
+                },
+                "max_page_size": {
+                    "type": "integer",
+                    "maximum": 1000,
+                    "minimum": 1,
+                    "example": 100
+                },
+                "server_port": {
+                    "type": "string",
+                    "example": "8080"
+                }
+            }
+        },
         "models.ErrorResponse": {
             "type": "object",
             "properties": {

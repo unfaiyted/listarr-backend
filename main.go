@@ -72,6 +72,10 @@ func main() {
 			users.PUT("/:id", handlers.UpdateUser(db))
 			users.DELETE("/:id", handlers.DeleteUser(db))
 		}
+		v1.GET("/config", handlers.GetConfig)
+		v1.PUT("/config", handlers.UpdateConfig)
+		v1.POST("/config/reset", handlers.ResetConfig)
+
 	}
 
 	// Then in your main() function, add:

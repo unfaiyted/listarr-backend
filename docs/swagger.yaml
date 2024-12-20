@@ -1,5 +1,46 @@
 basePath: /api/v1
 definitions:
+  models.ConfigResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.Configuration'
+      error:
+        type: string
+    type: object
+  models.Configuration:
+    properties:
+      api_version:
+        example: v1
+        type: string
+      database_url:
+        example: postgres://localhost:5432/listarr
+        type: string
+      enable_caching:
+        example: true
+        type: boolean
+      log_level:
+        enum:
+        - debug
+        - info
+        - warn
+        - error
+        example: info
+        type: string
+      max_page_size:
+        example: 100
+        maximum: 1000
+        minimum: 1
+        type: integer
+      server_port:
+        example: "8080"
+        type: string
+    required:
+    - api_version
+    - database_url
+    - log_level
+    - max_page_size
+    - server_port
+    type: object
   models.ErrorResponse:
     properties:
       error:
@@ -53,6 +94,73 @@ info:
   title: Listarr API
   version: "1.0"
 paths:
+  /config:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve current application configuration
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Configuration'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ConfigResponse'
+      summary: Get configuration
+      tags:
+      - config
+    put:
+      consumes:
+      - application/json
+      description: Update application configuration settings
+      parameters:
+      - description: Configuration settings
+        in: body
+        name: configuration
+        required: true
+        schema:
+          $ref: '#/definitions/models.Configuration'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Configuration'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ConfigResponse'
+      summary: Update configuration
+      tags:
+      - config
+  /config/reset:
+    post:
+      consumes:
+      - application/json
+      description: Reset configuration to default values
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Configuration'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ConfigResponse'
+      summary: Reset configuration
+      tags:
+      - config
   /users:
     get:
       consumes:
