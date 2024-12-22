@@ -41,7 +41,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Configuration"
+                            "$ref": "#/definitions/models.ConfigResponse"
                         }
                     },
                     "500": {
@@ -53,7 +53,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update application configuration settings",
+                "description": "Update application configuration settings in app.config.json",
                 "consumes": [
                     "application/json"
                 ],
@@ -79,7 +79,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Configuration"
+                            "$ref": "#/definitions/models.ConfigResponse"
                         }
                     },
                     "400": {
@@ -99,7 +99,7 @@ const docTemplate = `{
         },
         "/config/reset": {
             "post": {
-                "description": "Reset configuration to default values",
+                "description": "Reset app.config.json to default values",
                 "consumes": [
                     "application/json"
                 ],
@@ -114,7 +114,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.Configuration"
+                            "$ref": "#/definitions/models.ConfigResponse"
                         }
                     },
                     "500": {
@@ -345,6 +345,7 @@ const docTemplate = `{
     },
     "definitions": {
         "models.ConfigResponse": {
+            "description": "Configuration response wrapper",
             "type": "object",
             "properties": {
                 "data": {
@@ -356,46 +357,407 @@ const docTemplate = `{
             }
         },
         "models.Configuration": {
+            "description": "Complete application configuration settings",
             "type": "object",
-            "required": [
-                "api_version",
-                "database_url",
-                "log_level",
-                "max_page_size",
-                "server_port"
-            ],
             "properties": {
-                "api_version": {
-                    "type": "string",
-                    "example": "v1"
-                },
-                "database_url": {
-                    "type": "string",
-                    "example": "postgres://localhost:5432/listarr"
-                },
-                "enable_caching": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "log_level": {
-                    "type": "string",
-                    "enum": [
-                        "debug",
-                        "info",
-                        "warn",
-                        "error"
+                "app": {
+                    "description": "App contains core application settings",
+                    "type": "object",
+                    "required": [
+                        "apiBaseURL",
+                        "appURL",
+                        "environment",
+                        "logLevel",
+                        "maxPageSize",
+                        "name"
                     ],
-                    "example": "info"
+                    "properties": {
+                        "apiBaseURL": {
+                            "type": "string",
+                            "example": "http://localhost:8080"
+                        },
+                        "appURL": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        },
+                        "environment": {
+                            "type": "string",
+                            "enum": [
+                                "development",
+                                "staging",
+                                "production"
+                            ],
+                            "example": "development"
+                        },
+                        "logLevel": {
+                            "type": "string",
+                            "enum": [
+                                "debug",
+                                "info",
+                                "warn",
+                                "error"
+                            ],
+                            "example": "info"
+                        },
+                        "maxPageSize": {
+                            "type": "integer",
+                            "maximum": 1000,
+                            "minimum": 1,
+                            "example": 100
+                        },
+                        "name": {
+                            "type": "string",
+                            "example": "Listarr"
+                        }
+                    }
                 },
-                "max_page_size": {
-                    "type": "integer",
-                    "maximum": 1000,
-                    "minimum": 1,
-                    "example": 100
+                "auth": {
+                    "description": "Auth contains authentication settings",
+                    "type": "object",
+                    "required": [
+                        "jwtSecret",
+                        "sessionTimeout",
+                        "tokenExpiration"
+                    ],
+                    "properties": {
+                        "allowedOrigins": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "example": [
+                                "http://localhost:3000"
+                            ]
+                        },
+                        "enable2FA": {
+                            "type": "boolean",
+                            "example": false
+                        },
+                        "enableLocal": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "jwtSecret": {
+                            "type": "string",
+                            "example": "your-secret-key"
+                        },
+                        "sessionTimeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 60
+                        },
+                        "tokenExpiration": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 24
+                        }
+                    }
                 },
-                "server_port": {
+                "db": {
+                    "description": "Database contains database connection settings",
+                    "type": "object",
+                    "required": [
+                        "host",
+                        "maxConns",
+                        "name",
+                        "password",
+                        "port",
+                        "timeout",
+                        "user"
+                    ],
+                    "properties": {
+                        "host": {
+                            "type": "string",
+                            "example": "localhost"
+                        },
+                        "maxConns": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 20
+                        },
+                        "name": {
+                            "type": "string",
+                            "example": "listarr"
+                        },
+                        "password": {
+                            "type": "string",
+                            "example": "yourpassword"
+                        },
+                        "port": {
+                            "type": "string",
+                            "example": "5432"
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 30
+                        },
+                        "user": {
+                            "type": "string",
+                            "example": "postgres_user"
+                        }
+                    }
+                },
+                "http": {
+                    "description": "HTTP contains HTTP server configuration",
+                    "type": "object",
+                    "required": [
+                        "idleTimeout",
+                        "port",
+                        "readTimeout",
+                        "writeTimeout"
+                    ],
+                    "properties": {
+                        "enableSSL": {
+                            "type": "boolean",
+                            "example": false
+                        },
+                        "idleTimeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 60
+                        },
+                        "port": {
+                            "type": "string",
+                            "example": "8080"
+                        },
+                        "proxyEnabled": {
+                            "type": "boolean",
+                            "example": false
+                        },
+                        "proxyURL": {
+                            "type": "string",
+                            "example": "http://proxy:8080"
+                        },
+                        "rateLimitEnabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "readTimeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 30
+                        },
+                        "requestsPerMin": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "example": 100
+                        },
+                        "sslCert": {
+                            "type": "string",
+                            "example": "/path/to/cert.pem"
+                        },
+                        "sslKey": {
+                            "type": "string",
+                            "example": "/path/to/key.pem"
+                        },
+                        "writeTimeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 30
+                        }
+                    }
+                },
+                "integrations": {
+                    "description": "Integrations contains all third-party service configurations",
+                    "type": "object",
+                    "properties": {
+                        "emby": {
+                            "$ref": "#/definitions/models.EmbyConfig"
+                        },
+                        "jellyfin": {
+                            "$ref": "#/definitions/models.JellyfinConfig"
+                        },
+                        "navidrome": {
+                            "$ref": "#/definitions/models.NavidromeConfig"
+                        },
+                        "plex": {
+                            "$ref": "#/definitions/models.PlexConfig"
+                        },
+                        "spotify": {
+                            "$ref": "#/definitions/models.SpotifyConfig"
+                        },
+                        "trakt": {
+                            "$ref": "#/definitions/models.TraktConfig"
+                        }
+                    }
+                },
+                "spotdl": {
+                    "description": "SpotDL contains Spotify download integration settings",
+                    "type": "object",
+                    "required": [
+                        "concurrentDownloads",
+                        "downloadDirectory",
+                        "fileFormat",
+                        "maxRetries",
+                        "namingTemplate",
+                        "qualityPreset"
+                    ],
+                    "properties": {
+                        "concurrentDownloads": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "example": 2
+                        },
+                        "downloadDirectory": {
+                            "type": "string",
+                            "example": "./downloads"
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "example": false
+                        },
+                        "fileFormat": {
+                            "type": "string",
+                            "enum": [
+                                "mp3",
+                                "flac"
+                            ],
+                            "example": "mp3"
+                        },
+                        "maxRetries": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "example": 3
+                        },
+                        "namingTemplate": {
+                            "type": "string",
+                            "example": "{artist} - {title}"
+                        },
+                        "notifyOnComplete": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "qualityPreset": {
+                            "type": "string",
+                            "enum": [
+                                "low",
+                                "medium",
+                                "high"
+                            ],
+                            "example": "high"
+                        }
+                    }
+                },
+                "sync": {
+                    "description": "Sync contains synchronization settings",
+                    "type": "object",
+                    "required": [
+                        "conflictStrategy",
+                        "interval"
+                    ],
+                    "properties": {
+                        "collections": {
+                            "type": "object",
+                            "required": [
+                                "maxItems"
+                            ],
+                            "properties": {
+                                "allowedTypes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "series",
+                                        "movies",
+                                        "music"
+                                    ]
+                                },
+                                "enableSync": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "maxItems": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "example": 5000
+                                },
+                                "syncInterval": {
+                                    "type": "string",
+                                    "example": "0 */12 * * *"
+                                }
+                            }
+                        },
+                        "conflictStrategy": {
+                            "type": "string",
+                            "enum": [
+                                "overwrite",
+                                "skip",
+                                "merge"
+                            ],
+                            "example": "skip"
+                        },
+                        "enabled": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "interval": {
+                            "type": "string",
+                            "example": "0 */12 * * *"
+                        },
+                        "playlists": {
+                            "type": "object",
+                            "required": [
+                                "maxItems"
+                            ],
+                            "properties": {
+                                "allowedTypes": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    },
+                                    "example": [
+                                        "music",
+                                        "media"
+                                    ]
+                                },
+                                "enableSync": {
+                                    "type": "boolean",
+                                    "example": true
+                                },
+                                "maxItems": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "example": 1000
+                                },
+                                "syncInterval": {
+                                    "type": "string",
+                                    "example": "0 */6 * * *"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "models.EmbyConfig": {
+            "description": "Emby media server configuration",
+            "type": "object",
+            "properties": {
+                "apiKey": {
                     "type": "string",
-                    "example": "8080"
+                    "example": "your-api-key"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "host": {
+                    "type": "string",
+                    "example": "localhost"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 8096
+                },
+                "ssl": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
                 }
             }
         },
@@ -405,6 +767,140 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "error message"
+                }
+            }
+        },
+        "models.JellyfinConfig": {
+            "description": "Jellyfin media server configuration",
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string",
+                    "example": "your-api-key"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "host": {
+                    "type": "string",
+                    "example": "localhost"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 8096
+                },
+                "ssl": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "models.NavidromeConfig": {
+            "description": "Navidrome music server configuration",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "host": {
+                    "type": "string",
+                    "example": "localhost"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "your-password"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 4533
+                },
+                "ssl": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "username": {
+                    "type": "string",
+                    "example": "admin"
+                }
+            }
+        },
+        "models.PlexConfig": {
+            "description": "Plex media server configuration",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "host": {
+                    "type": "string",
+                    "example": "localhost"
+                },
+                "port": {
+                    "type": "integer",
+                    "example": 32400
+                },
+                "ssl": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "token": {
+                    "type": "string",
+                    "example": "your-plex-token"
+                }
+            }
+        },
+        "models.SpotifyConfig": {
+            "description": "Spotify configuration",
+            "type": "object",
+            "properties": {
+                "clientId": {
+                    "type": "string",
+                    "example": "your-client-id"
+                },
+                "clientSecret": {
+                    "type": "string",
+                    "example": "your-client-secret"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "redirectUri": {
+                    "type": "string",
+                    "example": "http://localhost:8080/callback"
+                },
+                "scopes": {
+                    "type": "string",
+                    "example": "user-library-read playlist-read-private"
+                }
+            }
+        },
+        "models.TraktConfig": {
+            "description": "Trakt.tv configuration",
+            "type": "object",
+            "properties": {
+                "clientId": {
+                    "type": "string",
+                    "example": "your-client-id"
+                },
+                "clientSecret": {
+                    "type": "string",
+                    "example": "your-client-secret"
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "redirectUri": {
+                    "type": "string",
+                    "example": "http://localhost:8080/callback"
                 }
             }
         },

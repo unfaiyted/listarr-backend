@@ -1,16 +1,17 @@
 # Backend Dockerfile
 FROM golang:1.23-alpine AS builder
-
 WORKDIR /app
 
-# Install git and build dependencies
-RUN apk add --no-cache git
-
+# Install git and build dependencies with pinned versions
+RUN apk add --no-cache git=2.47.1-r0
 # Copy go mod files
 COPY go.mod go.sum ./
 
 # Download dependencies
 RUN go mod download
+
+# Copy swagger docs if they exist
+COPY docs ./docs
 
 # Copy source code
 COPY . .
@@ -19,12 +20,13 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main main.go
 
 # Final stage
-FROM alpine:latest
-
+FROM alpine:3.19
 WORKDIR /app
 
 # Copy the binary from builder
 COPY --from=builder /app/main .
+# Copy swagger docs if they exist
+COPY --from=builder /app/docs ./docs
 
 # Expose port
 EXPOSE 8080

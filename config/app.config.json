@@ -1,0 +1,93 @@
+{
+  "app": {
+    "apiBaseURL": "http://localhost:8080",
+    "appURL": "http://localhost:3000",
+    "environment": "development",
+    "logLevel": "info",
+    "maxPageSize": 100,
+    "name": "Listarr"
+  },
+  "auth": {
+    "allowedOrigins": ["http://localhost:3000"],
+    "enable2FA": false,
+    "enableLocal": true,
+    "sessionTimeout": 60,
+    "tokenExpiration": 24
+  },
+  "db": {
+    "host": "localhost",
+    "maxConns": 20,
+    "name": "yourdb",
+    "password": "yourpassword",
+    "port": "5432",
+    "timeout": 30,
+    "user": "postgres"
+  },
+  "http": {
+    "enableSSL": false,
+    "idleTimeout": 60,
+    "port": "8080",
+    "rateLimitEnabled": true,
+    "readTimeout": 30,
+    "requestsPerMin": 100,
+    "writeTimeout": 30
+  },
+  "integrations": {
+    "emby": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 8096,
+      "ssl": false
+    },
+    "jellyfin": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 8096,
+      "ssl": false
+    },
+    "navidrome": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 4533,
+      "ssl": false
+    },
+    "plex": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 32400,
+      "ssl": false
+    },
+    "spotify": {
+      "enabled": false,
+      "scopes": "user-library-read playlist-read-private"
+    }
+  },
+  "spotdl": {
+    "concurrentLimit": 2,
+    "downloadDir": "./downloads",
+    "enabled": false,
+    "fileFormat": "mp3",
+    "maxRetries": 3,
+    "namingTemplate": "{artist} - {title}",
+    "notifyOnComplete": true,
+    "qualityPreset": "high"
+  },
+  "sync": {
+    "collections": {
+      "allowedTypes": ["series", "movies", "music"],
+      "enableSync": true,
+      "maxItems": 5000,
+      "syncInterval": "0 */12 * * *"
+    },
+    "conflictStrategy": "skip",
+    "enabled": true,
+    "interval": "0 */12 * * *",
+    "playlists": {
+      "allowedTypes": ["music", "media"],
+      "enableSync": true,
+      "maxItems": 1000,
+      "syncInterval": "0 */6 * * *"
+    }
+  }
+}
+

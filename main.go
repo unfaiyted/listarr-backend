@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"listarr-backend/handlers"
 	"listarr-backend/models"
+	"listarr-backend/utils"
 	"log"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -36,13 +36,19 @@ import (
 // @schemes	http
 // @openapi	3.0.0
 func main() {
+	if err := utils.InitConfig(); err != nil {
+		log.Fatalf("Failed to initilize conifg: %v", err)
+	}
+
+	appConfig := utils.GetConfig()
+
 	// Initialize DB
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"))
+		appConfig.Db.Host,
+		appConfig.Db.User,
+		appConfig.Db.Password,
+		appConfig.Db.Name,
+		appConfig.Db.Port)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
