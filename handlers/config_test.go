@@ -88,3 +88,79 @@ func TestResetConfig(t *testing.T) {
 	// Assertions
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+func TestGetConfig_Error(t *testing.T) {
+	// Setup
+	r := setupTestRouter()
+	r.GET("/config", GetConfig)
+
+	// Mock utils.GetConfig to return nil
+	// You'll need to implement mocking here
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/config", nil)
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestUpdateConfig_InvalidJSON(t *testing.T) {
+	r := setupTestRouter()
+	r.PUT("/config", UpdateConfig)
+
+	// Send invalid JSON
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/config", bytes.NewBufferString("{invalid json}"))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestUpdateConfig_ValidationCases(t *testing.T) {
+	tests := []struct {
+		name          string
+		config        models.Configuration
+		expectedCode  int
+		expectedError string
+	}{
+		{
+			name:   "valid config",
+			config: models.Configuration{
+				// valid configuration
+			},
+			expectedCode: http.StatusOK,
+		},
+		{
+			name:   "invalid config",
+			config: models.Configuration{
+				// invalid configuration
+			},
+			expectedCode:  http.StatusBadRequest,
+			expectedError: "Invalid configuration",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := setupTestRouter()
+			r.PUT("/config", UpdateConfig)
+
+			jsonData, _ := json.Marshal(tt.config)
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest("PUT", "/config", bytes.NewBuffer(jsonData))
+			req.Header.Set("Content-Type", "application/json")
+
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tt.expectedCode, w.Code)
+			if tt.expectedError != "" {
+				var response models.ConfigResponse
+				json.Unmarshal(w.Body.Bytes(), &response)
+				assert.Contains(t, response.Error, tt.expectedError)
+			}
+		})
+	}
+}
